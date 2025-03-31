@@ -21,12 +21,10 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
 
-        # Buttons clicked ####
+        # Conectar botón "actualizar" a la función update_all
         self.actualizar.clicked.connect(self.update_all)
-        # self.update.clicked.connect(self.update_all)
-        # Cosas de ploteo #####
-        # figure(figsize=(3, 2), dpi=80)7
 
+        # Configuración del ploteo de tiempo
         self.figure_tiempo = Figure(figsize=(3, 2), dpi=80)
         self.canvas_tiempo = FigureCanvas(self.figure_tiempo)
         self.plot_tiempo_layout.addWidget(NavigationToolbar(self.canvas_tiempo, self))
@@ -34,6 +32,7 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.plot_tiempo.setCurrentIndex(canvas_index_tiempo)
         self.ax1 = self.figure_tiempo.add_subplot(1, 1, 1)
 
+        # Configuración del ploteo de frecuencia
         self.figure_frec = Figure(figsize=(3, 2), dpi=80)
         self.canvas_frec = FigureCanvas(self.figure_frec)
         self.frec_plot_layout.addWidget(NavigationToolbar(self.canvas_frec, self))
@@ -41,33 +40,32 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.frec_plot.setCurrentIndex(canvas_index_frec)
         self.ax2 = self.figure_frec.add_subplot(1, 1, 1)
 
-        # Creo
-        # todo: Meter generate_signal al arreglo de stages así después se plotea todo piola con el for
-        generate_signal = SignalGen()
+        # Crear instancia de generador de señal
+        signal_generator = SignalGen()
         self.signal = np.array([])
-        # Creo Array de stages ####
-        self.stages = []  # Array with templates
 
-        self.stages.append(generate_signal)
-        aux = FAA(StageIDs.FAA)
-        self.stages.append(aux)
-        aux1 = SampleAndHold()
-        self.stages.append(aux1)
-        aux2 = LlaveAnalogica()
-        # signal_in, FREC, DUTY
-        self.stages.append(aux2)
-        aux3 = FAA(StageIDs.FR)
-        self.stages.append(aux3)
+        # Crear arreglo de stages
+        self.stages = []  # Arreglo de stages
 
-        # self.wrongtemplate = 0
+        # Agregar stages al arreglo con nombres descriptivos
+        self.stages.append(signal_generator)
+        faa_stage = FAA(StageIDs.FAA)
+        self.stages.append(faa_stage)
+        sample_and_hold_stage = SampleAndHold()
+        self.stages.append(sample_and_hold_stage)
+        analog_switch_stage = LlaveAnalogica()
+        self.stages.append(analog_switch_stage)
+        second_faa_stage = FAA(StageIDs.FR)
+        self.stages.append(second_faa_stage)
 
     def update_all(self):
+        # Limpiar gráficos actuales
         self.ax1.clear()
         self.canvas_tiempo.draw()
         self.ax2.clear()
         self.canvas_frec.draw()
 
-        # Signal processing
+        # Procesamiento de señales
         self.stages[0].update(self.signal, True, self.plot_xin.isChecked(), signal_type=self.Xin.currentText(),
                               A=self.Amplitud.value(), freq=self.Frec_xin.value() * (10 ** 3), phase=0,
                               fs=self.frec_sample.value() * (10 ** 3), DC=self.DC.value())
@@ -84,37 +82,11 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                               self.Amplitud.value(), self.Frec_xin.value() * (10 ** 3), phase=0,
                               fs=self.frec_sample.value() * (10 ** 3), DC=self.DC.value())
 
-        # Plot
-
-        for i in range(5):
-            self.stages[i].plot_stage_time(self.ax1)
-            self.stages[i].plot_stage_freq(self.ax2)
+        # Graficar resultados
+        for stage in self.stages:
+            stage.plot_stage_time(self.ax1)
+            stage.plot_stage_freq(self.ax2)
         self.canvas_tiempo.draw()
         self.canvas_frec.draw()
         self.ax1.legend()
         self.ax2.legend()
-        """
-        self.stages[2].update(self.generate_signal.signal_in, self.on_LA.isChecked(),self.plot_LA.isChecked(),self.Xin.currentText(),self.Amplitud.value(), self.Frec_xin.value()*(10**3), phase=0, fs=self.frec_sample.value()*(10**3), DC=self.DC.value())
-        #(self, signal_in, is_on, is_plot, signal_type=None, A=None, freq=None, phase=None, fs=None, DC=None)
-        if self.plot_SH.isChecked():
-            self.stages[2].plot_stage_time(self.ax1)
-            self.stages[2].plot_stage_freq(self.ax2)
-            self.canvas_tiempo.draw()
-            self.canvas_frec.draw()
-            self.ax1.legend()
-
-        #signal_in, is_on, is_plot, signal_type = None, amplitude = None, freq = None, phase = None, fs = None, DC = None
-
-        self.stages[1].update(self.stages[0].get_signal_out(), self.on_SH, self.plot_SH, signal_type=None,amplitude=self.Amplitud, freq=self.Frec_xin, phase=0, fs=self.frec_sample, DC=self.DC)
-        if self.plot_SH:
-            self.stages[1].plot_stage_time(self, self.ax1)
-            self.stages[1].plot_stage_freq(self.ax2)
-        self.stages[2].update(self.stages[1].get_signal_out(), self.on_LA, self.plot_LA, signal_type=None,amplitude=self.Amplitud, freq=self.Frec_xin, phase=0, fs=self.frec_sample, DC=self.DC)
-        if self.plot_LA:
-            self.stages[2].plot_stage_time(self, self.ax1)
-            self.stages[2].plot_stage_freq(self.ax2)
-        self.stages[3].update(self.stages[2].get_signal_out(), self.on_FR, self.plot_FR, signal_type=None,amplitude=self.Amplitud, freq=self.Frec_xin, phase=0, fs=self.frec_sample, DC=self.DC)
-        if self.plot_FR:
-            self.stages[3].plot_stage_time(self, self.ax1)
-            self.stages[3].plot_stage_freq(self.ax2)
-        """

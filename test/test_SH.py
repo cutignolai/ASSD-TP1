@@ -39,7 +39,7 @@ def test_sample_and_hold(fs):
     ax1.set_ylabel("Amplitud")
     ax1.plot(t_in, x_in, label="Señal Original", color="tab:orange")
     S1.plot_stage_time(ax1)
-    ax1.scatter(S1.signal_out[0], S1.signal_out[1], color="red", marker="o", label="Puntos Muestreados")  # Puntos muestreados
+    ax1.plot(S1.signal_out[0], S1.signal_out[1], color="red", marker="o", label="Puntos Muestreados")  # Puntos muestreados
     ax1.legend()
     ax1.grid(True)
     ax1.set_xlim(t_in[0], t_in[-1])

@@ -124,7 +124,10 @@ class Stage:
         Recibe el axis del front para graficar sobre él
         """
         if self.is_plot is True:
-            ax.plot(self.signal_out[0], self.signal_out[1], label=StageType[self.stage_id], color=StageColors[self.stage_id])
+            if(self.stage_id == 2):
+                ax.plot(self.signal_out[0], self.signal_out[1], color="red", marker="o", label="Puntos Muestreados")  # Puntos muestreados
+            else:
+                ax.plot(self.signal_out[0], self.signal_out[1], label=StageType[self.stage_id], color=StageColors[self.stage_id])
         return
 
     def plot_stage_freq(self, ax):
