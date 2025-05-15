@@ -10,7 +10,7 @@ S1 = SignalGen()
 t_in = np.linspace(0, 1, 1000)
 x_in = 5 * np.sin(2 * np.pi * 1E3 * t_in)
 signal_in = [copy(t_in), copy(x_in)]
-S1.update(None, True, True, signal_type="Coseno", A=5, freq=1E3, phase=0)
+S1.update(None, True, True, signal_type="ExpoXB", A=5, freq=1E3, phase=0)
 f1, ax = plt.subplots(2)
 ax1, ax2 = ax
 ax1.set_title("Tiempo")
